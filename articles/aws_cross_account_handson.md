@@ -95,6 +95,15 @@ resource "aws_iam_role_policy_attachment" "role_readonly_policy" {
 
 ![信頼されたエンティティ](https://storage.googleapis.com/zenn-user-upload/a35f881d59d4-20230715.png)
 
+作成したReadOnlyRoleを開きロールを切り替えるためのリンクのアイコンをクリックします。
+
+![リンクをコピーする](https://storage.googleapis.com/zenn-user-upload/c5b6d27abb53-20230715.png)
+
+chromeのシークレットモードを開きコピーしたリンクのページを開きます。
+ロールの切り替えを選択します。
+
+![ロールの切り替えを選択](https://storage.googleapis.com/zenn-user-upload/f346e0cfc160-20230715.png)
+
 ### アカウントBのAWSアカウントのIDを確認する
 
 ### アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
