@@ -73,7 +73,7 @@ resource "aws_iam_role" "role" {
       {
         Effect = "Allow",
         Principal = {
-          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+          AWS = "arn:aws:iam::アカウントBのID:root"
         },
         Action = "sts:AssumeRole",
       },
@@ -85,8 +85,6 @@ resource "aws_iam_role_policy_attachment" "role_readonly_policy" {
   role       = aws_iam_role.role.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
 }
-
-data "aws_caller_identity" "current" {}
 ```
 
 ![ReadOnlyUser](https://storage.googleapis.com/zenn-user-upload/e72f09271da0-20230715.png)
