@@ -42,6 +42,57 @@ AWSのクロスアカウント機能を用いたハンズオンを実施する�
 
 ### アカウントAに「読み取り専用のみ」のポリシー権限がアタッチされたIAMロールを持つIAMユーザーを作成する
 
+```terraform: main.tf
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.1.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "ap-northeast-1"
+}
+
+resource "aws_iam_user" "user" {
+  name = "ReadOnlyUser"
+}
+
+resource "aws_iam_access_key" "user_key" { // 目的のIAMユーザーのアクセスキーを作成
+  user = aws_iam_user.user.name
+}
+
+resource "aws_iam_role" "role" {
+  name = "ReadOnlyRole"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
+        },
+        Action = "sts:AssumeRole",
+      },
+    ],
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "role_readonly_policy" {
+  role       = aws_iam_role.role.name
+  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
+}
+
+data "aws_caller_identity" "current" {}
+```
+
+![ReadOnlyUser](https://storage.googleapis.com/zenn-user-upload/e72f09271da0-20230715.png)
+
+![ReadOnlyRole](https://storage.googleapis.com/zenn-user-upload/295da143b6f5-20230715.png)
+
 ### アカウントBのAWSアカウントのIDを確認する
 
 ### アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
