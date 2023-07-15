@@ -104,6 +104,9 @@ chromeのシークレットモードを開きコピーしたリンクのペー�
 
 ![ロールの切り替えを選択](https://storage.googleapis.com/zenn-user-upload/f346e0cfc160-20230715.png)
 
+
+![リンク押下後のロールの切り替え](https://storage.googleapis.com/zenn-user-upload/6b44c7c6dc23-20230715.png)
+
 ### アカウントBのAWSアカウントのIDを確認する
 
 ### アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
