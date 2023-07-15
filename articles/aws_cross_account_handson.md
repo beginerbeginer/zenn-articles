@@ -91,6 +91,8 @@ resource "aws_iam_role_policy_attachment" "role_readonly_policy" {
 
 ![ReadOnlyRole](https://storage.googleapis.com/zenn-user-upload/295da143b6f5-20230715.png)
 
+アカウントBのIDが書かれていることを確認する。
+
 ![信頼されたエンティティ](https://storage.googleapis.com/zenn-user-upload/a35f881d59d4-20230715.png)
 
 ### アカウントBのAWSアカウントのIDを確認する
