@@ -3,7 +3,7 @@ title: "AWSでクロスアカウントを作成するハンズオン"
 emoji: "📝"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: [AWS]
-published: true
+published: false
 ---
 
 
