@@ -3,113 +3,70 @@ title: "AWSでクロスアカウントを作成するハンズオン"
 emoji: "📝"
 type: "idea" # tech: 技術記事 / idea: アイデア
 topics: [AWS]
-published: false
+published: true
 ---
-
-
-## 目次
-
-- 記事の目的
-- IAMロールのクロスアカウントアクセスとは？
-- 作業内容
-  - アカウントを2つ作成する
-  - アカウントAに「読み取り専用のみ」のポリシー権限がアタッチされたIAMロールを持つIAMユーザーを作成する
-  - アカウントBのAWSアカウントのIDを確認する
-  - アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
-- 参考記事
 
 ## 記事の目的
 
-AWSのクロスアカウント機能を用いたハンズオンを実施する設定方法を学ぶ
-２つのAWSアカウントA,Bを作成しアカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできることを確認する
+この記事では、AWS（Amazon Web Services）のクロスアカウント機能を用いた設定方法を学びます。
+具体的には、２つのAWSアカウント（以下、アカウントAとB）を作成し、アカウントAのIAM（Identity and Access Management）ロールに、アカウントBのIAMユーザーが切り替えられることを確認します。
 
 ## IAMロールのクロスアカウントアクセスとは？
 
-> クロスアカウントアクセスロールとはAWSアカウントAにあるIAMロールの権限をAWSアカウントBのIAMユーザが利用してアカウントAのリソースを操作するためのものになります。 メリットとしてはアカウントBにログインした状態からログアウトしてアカウントAにアクセスするといったことが不要になります。
+クロスアカウントアクセスとは、あるAWSアカウント（ここではアカウントA）のIAMロールの権限を、別のAWSアカウント（ここではアカウントB）のIAMユーザーが利用し、アカウントAのリソースを操作するための仕組みです。
+この仕組みにより、アカウント間でのリソースの共有や操作が可能になります。
+
+## 結論：クロスアカウントアクセスのメリット
+
+クロスアカウントアクセスの主なメリットは、ログイン状態の切り替えの手間が減ることです。
+具体的には、アカウントBにログインした状態からログアウトしてアカウントAにアクセスするといった操作が不要になります。
+これにより、複数のAWSアカウントを管理する際の効率が向上します。
 
 ## 作業内容
 
 - アカウントを2つ作成する
 - アカウントAに「読み取り専用のみ」のポリシー権限がアタッチされたIAMロールを持つIAMユーザーを作成する
-- アカウントBのAWSアカウントのIDを確認する
-- アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
+- カウントBのAWSアカウントのIDを記述する
+- ロールを切り替えるためのリンクをコピーする
+- ロールの切り替えを選択
+- アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできることを確認する
 
 ### AWSアカウントを2つ作成する
 
-２つのAWSアカウントを作成する
+最初のステップとして、２つのAWSアカウントを作成します。それぞれをアカウントAとアカウントBと呼びます。
 
 ![２つのAWSアカウント](https://storage.googleapis.com/zenn-user-upload/ac8c18cbd536-20230715.png)
 
-### アカウントAに「読み取り専用のみ」のポリシー権限がアタッチされたIAMロールを持つIAMユーザーを作成する
+### アカウントAに「読み取り専用のみ」のポリシー権限がアタッチされたIAMロールを作成する
 
-```terraform: main.tf
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.1.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = "ap-northeast-1"
-}
-
-resource "aws_iam_user" "user" {
-  name = "ReadOnlyUser"
-}
-
-resource "aws_iam_access_key" "user_key" { // 目的のIAMユーザーのアクセスキーを作成
-  user = aws_iam_user.user.name
-}
-
-resource "aws_iam_role" "role" {
-  name = "ReadOnlyRole"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Principal = {
-          AWS = "arn:aws:iam::アカウントBのID:root"
-        },
-        Action = "sts:AssumeRole",
-      },
-    ],
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "role_readonly_policy" {
-  role       = aws_iam_role.role.name
-  policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-}
-```
-
-![ReadOnlyUser](https://storage.googleapis.com/zenn-user-upload/e72f09271da0-20230715.png)
+アカウントAで新しいIAMロールを作成し、「読み取り専用」のポリシー権限をそのロールにアタッチします。
 
 ![ReadOnlyRole](https://storage.googleapis.com/zenn-user-upload/295da143b6f5-20230715.png)
 
-アカウントBのIDが書かれていることを確認する。
+## アカウントBのAWSアカウントのIDを記述する
+
+アカウントBのAWSアカウントIDを記述します。これにより、アカウントBからアカウントAのIAMロールにアクセスできるようになります。
 
 ![信頼されたエンティティ](https://storage.googleapis.com/zenn-user-upload/a35f881d59d4-20230715.png)
 
-作成したReadOnlyRoleを開きロールを切り替えるためのリンクのアイコンをクリックします。
+## ロールを切り替えるためのリンクをコピーする
+
+作成したIAMロールのページを開き、「ロールを切り替えるためのリンク」のアイコンをクリックしてリンクをコピーします。
 
 ![リンクをコピーする](https://storage.googleapis.com/zenn-user-upload/c5b6d27abb53-20230715.png)
 
-chromeのシークレットモードを開きコピーしたリンクのページを開きます。
-ロールの切り替えを選択します。
+## ロールの切り替えを選択
 
-![ロールの切り替えを選択](https://storage.googleapis.com/zenn-user-upload/f346e0cfc160-20230715.png)
+コピーしたリンクを新しいブラウザタブで開きます（ここでは、chromeのシークレットモードを推奨）。
+開いたページで「ロールの切り替え」を選択します。
 
+![リンク押下後のロールの切り替え](https://storage.googleapis.com/zenn-user-upload/bde4a6357326-20230726.png)
 
-![リンク押下後のロールの切り替え](https://storage.googleapis.com/zenn-user-upload/6b44c7c6dc23-20230715.png)
+### アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできることを確認する
 
-### アカウントBのAWSアカウントのIDを確認する
+アカウントAのブラウザでAWSコンソールが変更されていることを確認します。これにより、アカウントBのIAMユーザーがアカウントAのIAMロールに切り替えられることが確認できます。
 
-### アカウントAのIAMロールに、アカウントBのIAMユーザーがスイッチできるように設定する
+![クロスアカウント設定後のAWSコンソールの画面](https://storage.googleapis.com/zenn-user-upload/9d9426af5b96-20230726.png)
 
 ## 参考記事
 
