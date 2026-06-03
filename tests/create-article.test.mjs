@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
   buildArticle,
+  buildArticleSlug,
   normalizeSlug,
   parseTopics,
   validateTopics,
@@ -18,6 +19,25 @@ test("normalizeSlug converts title-like text into a lowercase slug", () => {
 
 test("normalizeSlug returns an empty slug when the title has no supported characters", () => {
   assert.equal(normalizeSlug("テスト技法の使い分け"), "");
+});
+
+test("buildArticleSlug appends an auto-generated suffix to a readable prefix", () => {
+  assert.equal(buildArticleSlug("TDD CLI", "a1b2c3d4e5f6"), "tdd-cli-a1b2c3d4e5f6");
+});
+
+test("buildArticleSlug generates a random suffix when omitted", () => {
+  assert.match(buildArticleSlug("TDD CLI"), /^tdd-cli-[a-f0-9]{14}$/);
+});
+
+test("buildArticleSlug keeps the slug within 50 characters", () => {
+  const slug = buildArticleSlug("this is a very long article slug prefix for local readability", "a1b2c3d4e5f6");
+
+  assert.equal(slug.length, 50);
+  assert.match(slug, /-a1b2c3d4e5f6$/);
+});
+
+test("buildArticleSlug uses a fallback prefix when the readable prefix is empty", () => {
+  assert.equal(buildArticleSlug("テスト技法の使い分け", "a1b2c3d4e5f6"), "article-a1b2c3d4e5f6");
 });
 
 test("parseTopics accepts comma-separated topics", () => {

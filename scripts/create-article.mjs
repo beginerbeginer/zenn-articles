@@ -2,6 +2,7 @@
 
 import { mkdir, writeFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import net from "node:net";
 import path from "node:path";
 import process from "node:process";
@@ -13,6 +14,8 @@ const ARTICLE_DIR = "articles";
 const DEFAULT_TYPE = "tech";
 const PREVIEW_PORT = 8000;
 const PREVIEW_HOST = "localhost";
+const MAX_SLUG_LENGTH = 50;
+const DEFAULT_SLUG_PREFIX = "article";
 const EMOJI_CHOICES = [
   { emoji: "📝", label: "メモ・記事" },
   { emoji: "💡", label: "アイデア" },
@@ -50,7 +53,19 @@ function normalizeSlug(value) {
     .replace(/[\s_]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
-    .slice(0, 50);
+    .slice(0, MAX_SLUG_LENGTH);
+}
+
+function generateSlugSuffix() {
+  return randomBytes(7).toString("hex");
+}
+
+function buildArticleSlug(prefix, suffix = generateSlugSuffix()) {
+  const normalizedSuffix = normalizeSlug(suffix);
+  const maxPrefixLength = MAX_SLUG_LENGTH - normalizedSuffix.length - 1;
+  const normalizedPrefix = normalizeSlug(prefix).slice(0, maxPrefixLength).replace(/-$/g, "") || DEFAULT_SLUG_PREFIX;
+
+  return `${normalizedPrefix}-${normalizedSuffix}`;
 }
 
 function normalizeTopics(value) {
@@ -119,21 +134,6 @@ function formatTopics(topics) {
   }
 
   return `[${topics.map(quoteYaml).join(", ")}]`;
-}
-
-function timestampSlug() {
-  const now = new Date();
-  const pad = (value) => String(value).padStart(2, "0");
-
-  return [
-    now.getFullYear(),
-    pad(now.getMonth() + 1),
-    pad(now.getDate()),
-    "-",
-    pad(now.getHours()),
-    pad(now.getMinutes()),
-    pad(now.getSeconds())
-  ].join("");
 }
 
 function isNodeError(error, code) {
@@ -323,8 +323,9 @@ async function main() {
   console.log("Zenn記事を作成します。空欄はおすすめ値で進められます。\n");
 
   const title = await askRequired("タイトル");
-  const defaultSlug = normalizeSlug(title) || `article-${timestampSlug()}`;
-  const slug = normalizeSlug(await ask("slug", defaultSlug)) || defaultSlug;
+  const defaultSlugPrefix = normalizeSlug(title) || DEFAULT_SLUG_PREFIX;
+  const slugPrefix = await ask("slug先頭", defaultSlugPrefix);
+  const slug = buildArticleSlug(slugPrefix);
   const emoji = await askEmoji();
   const type = await askType();
   const topics = await askTopics();
@@ -335,6 +336,7 @@ async function main() {
   const { articlePath, articleSlug } = await writeUniqueArticle(slug, article);
 
   console.log(`\n作成しました: ${articlePath}`);
+  console.log(`slug: ${articleSlug}`);
   closeReadline();
 
   await startPreview(articleSlug);
@@ -342,6 +344,7 @@ async function main() {
 
 export {
   buildArticle,
+  buildArticleSlug,
   formatTopics,
   normalizeSlug,
   normalizeTopics,
