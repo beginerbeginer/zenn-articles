@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test",
+    "article:new": "node ./scripts/create-article.mjs",
+    "new": "node ./scripts/create-article.mjs"
   },
   "repository": {
     "type": "git",
@@ -19,5 +21,8 @@
   "homepage": "https://github.com/beginerbeginer/zenn-articles#readme",
   "devDependencies": {
     "zenn-cli": "^0.4.8"
+  },
+  "bin": {
+    "article": "./scripts/create-article.mjs"
   }
 }
