@@ -10,6 +10,8 @@ npm run article:new
 質問に答えると、`articles/`配下にZenn用のMarkdownファイルが作成されます。
 emojiは番号で選択でき、記事作成後は自動で`npx zenn preview`が起動して、作成した記事ページがブラウザで開きます。
 Zenn CLI固有のコマンドやオプションは、このラッパーCLIの内側に隠しています。
+slugは先頭部分だけを入力し、末尾には自動生成された文字列が付きます。
+たとえば`testing-cli`と入力すると、`testing-cli-a1b2c3d4e5f6`のようなファイル名になります。
 
 ## 記事の雛形からサーバーの起動まで実行
 
